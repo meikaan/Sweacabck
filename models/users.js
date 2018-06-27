@@ -33,7 +33,7 @@ var UserSchema = new mongoose.Schema({
 var User = mongoose.model('User', UserSchema);
 
 //GET USERS
-module.exports.find =function(callback, limit){          
+module.exports.getUsers =function(callback, limit){          
     User.find(callback).limit(limit);
 }
 
@@ -66,6 +66,13 @@ module.exports.removeUser =function(id, callback){
     User.remove(query, callback);
 }
 
+module.exports.verifyPassword = function(id, callback){
+    User.find({password:id}, callback);
+}
+
+module.exports.findOne = function(id, callback){
+    User.find({username:id}, callback);
+}
 
 console.log("no problem");
 

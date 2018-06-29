@@ -1,6 +1,9 @@
+var mongoose = require('mongoose'),
+    Schema = mongoose.Schema,
+    bcrypt = require('bcryptjs'),
+    SALT_WORK_FACTOR = 10;
 var express = require('express');
-var app = express();
-var mongoose = require('mongoose');  
+var app = express();  
 var crypto = require('crypto');
 var jwt = require('jsonwebtoken');
 var bodyParser = require('body-parser');
@@ -21,8 +24,8 @@ var UserSchema = new mongoose.Schema({
         required: true
     },
     contact:{
-        type: String
-        ,required: true
+        type: String,
+        required: true
     },
     address:{
         type: String,
@@ -30,7 +33,8 @@ var UserSchema = new mongoose.Schema({
     }
 });
 
-var User = mongoose.model('User', UserSchema);
+// var User = mongoose.model('User', UserSchema);
+// var User = mongoose.model('User');
 
 //GET USERS
 module.exports.getUsers =function(callback, limit){          
@@ -70,12 +74,58 @@ module.exports.verifyPassword = function(id, callback){
     User.find({password:id}, callback);
 }
 
-module.exports.findOne = function(id, callback){
-    User.find({username:id}, callback);
-}
-
 console.log("no problem");
 
+UserSchema.pre('save', function(next) {
+    var user = this;
+
+    // only hash the password if it has been modified (or is new)
+    if (!user.isModified('password')) return next();
+
+    // generate a salt
+    bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
+        if (err) return next(err);
+
+        // hash the password using our new salt
+        bcrypt.hash(user.password, salt, function(err, hash) {
+            if (err) return next(err);
+
+            // override the password with the hashed one
+            user.password = hash;
+            next();
+        });
+    });
+});
+
+// UserSchema.statics.authenticate = function (email, password, callback) {
+//   User.findOne({ email: email })
+//     .exec(function (err, user) {
+//       if (err) {
+//         return callback(err)
+//       } else if (!user) {
+//         var err = new Error('User not found.');
+//         err.status = 401;
+//         return callback(err);
+//       }
+//       bcrypt.compare(password, user.password, function (err, result) {
+//         if (result === true) {
+//           return callback(null, user);
+//         } else {
+//           return callback();
+//         }
+//       })
+//     });
+// }
+
+UserSchema.methods.comparePassword = function(userPassword, cb) {
+    bcrypt.compare(userPassword, this.password, function(err, isMatch) {
+        if (err) return cb(err);
+        cb(null, isMatch);
+    });
+};
+
+
+var User = mongoose.model('User', UserSchema);
 module.export = app;
 
 

@@ -1,11 +1,41 @@
 var express = require('express');
 var app = require('express')();
-var mongoose = require('mongoose'); 
+var mongoose = require('mongoose');
+var bcrypt = require('bcryptjs'); 
 var bodyParser = require('body-parser');
+const SALT_WORK_FACTOR = 10;
+var req.session.userId = user._id;
+var passwordHash = require('password-hash');
+var session = require('express-session')
+app.use(session({
+  secret: 'work hard',
+  resave: true,
+  saveUninitialized: false
+}));
+ var UserSchema = new mongoose.Schema({  
+    username:{
+        type: String,
+        required: true
+    },
+    email:{ 
+        type: String,
+        required: true
+    },
+    password:{
+        type: String,
+        required: true
+    },
+    contact:{
+        type: String
+        ,required: true
+    },
+    address:{
+        type: String,
+        required: true
+    }
+});
 
-//var passwordHash = require('password-hash');
-
-//var User = mongoose.model('UserSchema');
+//var User = mongoose.model('User');
 //var User= mongoose.model('User',UserSchema);
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
@@ -19,7 +49,7 @@ console.log("no problem");
 // login
 app.post('/api/login', function (req, res, next) {
       // access to User methods.  
-      User.findOne({ username: req.body.username }).exec(function (err, user) {
+      User.getUserById({ username: req.body.username }).exec(function (err, user) {
           if(err) return next(err); 
           if(!User) return res.status(401).send();
           if (User.verifyPassword(req.body.password)) {
@@ -56,63 +86,71 @@ app.post('/api/login', function (req, res, next) {
             message: 'Authentication failed. Couldnot find user!'  
         });  
     }  
-};  
-
-//middleware  
-app.use(function(req, res, next) {  
-  
-    // check header or url parameters or post parameters for token  
-    var token = req.body.token || req.query.token || req.headers['x-access-token'];  
-  
-    // decode token  
-    if (token) {  
-        // verifies secret and checks exp  
-        jwt.verify(token, config.secret, function(err, decoded) {  
-            if (err) {  
-                return res.json({  
-                    success: false,  
-                    message: 'Failed to authenticate token.'  
-                });  
-            } else {  
-                // save to request for use in other routes  
-                req.decoded = decoded;  
-                next();  
-            }  
-        });  
-    } else {  
-        // if there is no token  
-        // return an error  
-        return res.status(403).send({  
-            success: false,  
-            message: 'No token provided.'  
-        });  
-    }  
+};
+});
 });  
 
+// UserSchema.statics.authenticate = function (email, password, callback) {
+//   User.findOne({ email: email })
+//     .exec(function (err, user) {
+//       if (err) {
+//         return callback(err)
+//       } else if (!user) {
+//         var err = new Error('User not found.');
+//         err.status = 401;
+//         return callback(err);
+//       }
+//       bcrypt.compare(password, user.password, function (err, result) {
+//         if (result === true) {
+//           return callback(null, user);
+//         } else {
+//           return callback();
+//         }
+//       })
+//     });
+// }
+
+
+if (req.body.email &&
+  req.body.username &&
+  req.body.password) {
+  var userData = {
+    email: req.body.email,
+    username: req.body.username,
+    password: req.body.password,
+  }
+  //use schema.create to insert data into the db
+  User.create(userData, function (err, user) {
+    if (err) {
+      return next(err)
+    } else {
+      return res.redirect('/profile');
+    }
+  });
+}
+
+//hashing a password before saving it to the database
+UserSchema.pre('save', function (next) {
+  var user = this;
+var hashedPassword = bcrypt.hashSync(req.body.password, 8);
+  if (err) {
+      return next(err);
+    }
+    user.password = hash;
+    next();
+  });
 
   // var token = jwt.sign({username:User.username}, config.secret, {expiresIn:'1h'});
               //    return res.status(200).send({message: 'You are now signed in', token: token});
-           //  }
-  //        });
- //                return res.status(404).send({ error: 'Invalid username or password: ' + req.body.username });
- //     });
 
-
- app.get('/logout', function(req, res) {
-  res.status(200).send({ auth: false, token: null });
+ app.get('/api/logout', function(req, res) {
+  //res.status(200).send({ auth: false, token: null });
+   res.redirect('/home');
 });
  
 
-app.get('/me', function(req, res) {
- var token = req.headers['x-access-token'];
-  if (!token) return res.status(401).send({ auth: false, message: 'No token provided.' });
-  
-  jwt.verify(token, config.secret, function(err, decoded) {
-    if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
-    
-    res.status(200).send(decoded);
-  });
-});
+
+var User = mongoose.model('User', UserSchema);
 
 module.exports= app;
 

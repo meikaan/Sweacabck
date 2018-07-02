@@ -6,6 +6,7 @@ var express = require('express');
 var app = express();  
 var crypto = require('crypto');
 var jwt = require('jsonwebtoken');
+
 var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -34,7 +35,6 @@ var UserSchema = new mongoose.Schema({
 });
 
 // var User = mongoose.model('User', UserSchema);
-// var User = mongoose.model('User');
 
 //GET USERS
 module.exports.getUsers =function(callback, limit){          
@@ -70,31 +70,43 @@ module.exports.removeUser =function(id, callback){
     User.remove(query, callback);
 }
 
-module.exports.verifyPassword = function(id, callback){
-    User.find({password:id}, callback);
-}
+// module.exports.verifyPassword = function(id, callback){
+//     User.find({password:id}, callback);
+// }
 
 console.log("no problem");
 
-UserSchema.pre('save', function(next) {
-    var user = this;
+// UserSchema.pre('save', function(next) {
+//     var user = this;
 
-    // only hash the password if it has been modified (or is new)
-    if (!user.isModified('password')) return next();
+//     // only hash the password if it has been modified (or is new)
+//     if (!user.isModified('password')) return next();
 
-    // generate a salt
-    bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
-        if (err) return next(err);
+//     // generate a salt
+//     bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
+//         if (err) return next(err);
 
-        // hash the password using our new salt
-        bcrypt.hash(user.password, salt, function(err, hash) {
-            if (err) return next(err);
+//         // hash the password using our new salt
+//         bcrypt.hash(user.password, salt, function(err, hash) {
+//             if (err) return next(err);
 
-            // override the password with the hashed one
-            user.password = hash;
-            next();
-        });
-    });
+//             // override the password with the hashed one
+//             user.password = hash;
+//             next();
+//         });
+//     });
+// });
+
+//hashing a password before saving it to the database
+UserSchema.pre('save', function (next) {
+  var user = this;
+  bcrypt.hash(user.password, 10, function (err, hash){
+    if (err) {
+      return next(err);
+    }
+    user.password = hash;
+    next();
+  })
 });
 
 // UserSchema.statics.authenticate = function (email, password, callback) {

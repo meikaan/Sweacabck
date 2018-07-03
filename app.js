@@ -1,3 +1,4 @@
+const admin = require('./firebase-admin');
 require('rootpath')();
 var express = require('express');
 var app = express();
@@ -11,7 +12,7 @@ var config = require('config');
 var mongoose = require('mongoose');
 
 var session = require('express-session')
-//var req.session.userId = user._id;
+// var req.session.userId = user._id;
 // app.use(session({
 //   secret: 'work hard',
 //   resave: true,
@@ -28,7 +29,7 @@ app.use(bodyParser.json());
  User = require('./models/users')
 
 app.use(require('./routers/api'))
-//app.use(require('./controllers/AuthController'))
+app.use(require('./controllers/AuthController'))
 
 //connect to mongoose
 mongoose.connect('mongodb://localhost/sweaca');
@@ -57,6 +58,7 @@ app.get('/profile/:_id',function(req, res){
         res.json(user);
     });
 });
+
 
 //CREATE USER
 app.post('/api/register',function(req, res){
@@ -216,11 +218,19 @@ app.post('/api/login', function (req, res, next) {
 });
 });  
 
+//const port = process.env.APP_PORT || 4000;
+const host = process.env.APP_HOST || '127.0.0.1';
+
 
 // start server
 var port = process.env.NODE_ENV === 'production' ? 80 : 4000;
-var server = app.listen(port, function () {
-    console.log('Server listening on port ' + port);
+var server = app.listen(port, host, function () {
+    //console.log('Server listening on port ' + port);
+    console.log(`Server listening at ${host}:${port}`);
 });
+
+//app.listen(port, host);
+
+
 
 module.exports = app;

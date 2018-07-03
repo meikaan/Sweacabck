@@ -74,6 +74,10 @@ module.exports.verifyPassword = function(id, callback){
     User.find({password:id}, callback);
 }
 
+// module.exports.findById = function(header, callback){
+//     User
+// }
+
 console.log("no problem");
 
 // UserSchema.pre('save', function(next) {

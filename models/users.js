@@ -70,9 +70,9 @@ module.exports.removeUser =function(id, callback){
     User.remove(query, callback);
 }
 
-// module.exports.verifyPassword = function(id, callback){
-//     User.find({password:id}, callback);
-// }
+module.exports.verifyPassword = function(id, callback){
+    User.find({password:id}, callback);
+}
 
 console.log("no problem");
 
@@ -109,32 +109,32 @@ UserSchema.pre('save', function (next) {
   })
 });
 
-// UserSchema.statics.authenticate = function (email, password, callback) {
-//   User.findOne({ email: email })
-//     .exec(function (err, user) {
-//       if (err) {
-//         return callback(err)
-//       } else if (!user) {
-//         var err = new Error('User not found.');
-//         err.status = 401;
-//         return callback(err);
-//       }
-//       bcrypt.compare(password, user.password, function (err, result) {
-//         if (result === true) {
-//           return callback(null, user);
-//         } else {
-//           return callback();
-//         }
-//       })
-//     });
-// }
-
-UserSchema.methods.comparePassword = function(userPassword, cb) {
-    bcrypt.compare(userPassword, this.password, function(err, isMatch) {
-        if (err) return cb(err);
-        cb(null, isMatch);
+UserSchema.statics.authenticate = function (email, password, callback) {
+  User.findOne({ email: email })
+    .exec(function (err, user) {
+      if (err) {
+        return callback(err)
+      } else if (!user) {
+        var err = new Error('User not found.');
+        err.status = 401;
+        return callback(err);
+      }
+      bcrypt.compare(password, user.password, function (err, result) {
+        if (result === true) {
+          return callback(null, user);
+        } else {
+          return callback();
+        }
+      })
     });
-};
+}
+
+// UserSchema.methods.comparePassword = function(userPassword, cb) {
+//     bcrypt.compare(userPassword, this.password, function(err, isMatch) {
+//         if (err) return cb(err);
+//         cb(null, isMatch);
+//     });
+// };
 
 
 var User = mongoose.model('User', UserSchema);

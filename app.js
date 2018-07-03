@@ -38,26 +38,6 @@ app.get('/home',function(req, res){
   res.send('please use a valid url');
 });
 
-// UserSchema.statics.authenticate = function (email, password, callback) {
-//   User.findOne({ email: email })
-//     .exec(function (err, user) {
-//       if (err) {
-//         return callback(err)
-//       } else if (!user) {
-//         var err = new Error('User not found.');
-//         err.status = 401;
-//         return callback(err);
-//       }
-//       bcrypt.compare(password, user.password, function (err, result) {
-//         if (result === true) {
-//           return callback(null, user);
-//         } else {
-//           return callback();
-//         }
-//       })
-//     });
-// }
-
 // GET USERS
 app.get('/users',function(req, res){
     User.getUsers(function(err, users){
@@ -87,15 +67,13 @@ app.post('/api/register',function(req, res){
         } else{
            // create a token     
     var token = jwt.sign({ id: user._id }, config.secret, {
-      expiresIn: 3600 // expires in 24 hours
+      expiresIn: 3600 
     });
     res.status(200).send({ auth: true, token: token });
         res.json(user);
         }
     });
 });
-    
-    
 
 
 //UPDATES USER
@@ -122,16 +100,121 @@ app.delete('/api/users/:_id',function(req, res){
     });
 });
 
-app.get('/restricted', function(req, res) {
+app.get('/me', function(req, res) {
   var token = req.headers['x-access-token'];
   if (!token) return res.status(401).send({ auth: false, message: 'No token provided.' });
   
   jwt.verify(token, config.secret, function(err, decoded) {
     if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
     
-    res.status(200).send(decoded);
+  User.findById(decoded.id, function (err, user) {
+  if (err) return res.status(500).send("There was a problem finding the user.");
+  if (!user) return res.status(404).send("No user found.");
+  
+  res.status(200).send(user);
+});
   });
 });
+
+// login
+// app.post('/api/login', function (req, res, next) {
+//       // access to User methods.  
+//       User.getUserById({ username: req.body.username }).exec(function (err, user) {
+//           if(err) return next(err); 
+//           if(!User) return res.status(401).send();
+//           if (User.verifyPassword(req.body.password)) {
+//           var isUserFound = false;
+//           var foundUser = {};
+
+//           for (var i = 0; i < users.length; i++) {  
+//         if (users[i].user === req.body.user) {  
+//             isUserFound = true;  
+//             foundUser = users[i];  
+//         }  
+//     }  
+//     if (isUserFound) {  
+//         if (foundUser.password == req.body.password) {  
+//             var token = jwt.sign(foundUser, config.secret, {  
+//                 expiresIn: 3600 // expires in 24 hours  
+//             });  
+//             console.log(token);  
+//             res.json({  
+//                 success: true,  
+//                 message: 'Here is your token!',  
+//                 token: token  
+//             });  
+//         } else {  
+//             res.json({  
+//                 success: false,  
+//                 message: 'Authentication failed. Wrong password!'  
+//             });  
+//         }  
+//         res.send(foundUser);  
+//     } else {  
+//         res.json({  
+//             success: false,  
+//             message: 'Authentication failed. Couldnot find user!'  
+//         });  
+//     }  
+// };
+// });
+// });  
+// app.post('/login', function(req, res) {
+//   User.findOne({ email: req.body.email }, function (err, user) {
+//     if (err) return res.status(500).send('Error on the server.');
+//     if (!user) return res.status(404).send('No user found.');
+//     var passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
+//     if (!passwordIsValid) return res.status(401).send({ auth: false, token: null });
+//     var token = jwt.sign({ id: user._id }, config.secret, {
+//       expiresIn: 86400 // expires in 24 hours
+//     });
+//     res.status(200).send({ auth: true, token: token });
+//   });
+// });
+
+// login
+app.post('/api/login', function (req, res, next) {
+      // access to User methods.  
+      User.getUserById({ username: req.body.username }).exec(function (err, user) {
+          if(err) return next(err); 
+          if(!User) return res.status(401).send();
+          if (User.verifyPassword(req.body.password)) {
+          var isUserFound = false;
+          var foundUser = {};
+
+          for (var i = 0; i < users.length; i++) {  
+        if (users[i].user === req.body.user) {  
+            isUserFound = true;  
+            foundUser = users[i];  
+        }  
+    }  
+    if (isUserFound) {  
+        if (foundUser.password == req.body.password) {  
+            var token = jwt.sign(foundUser, config.secret, {  
+                expiresIn: 3600 // expires in 24 hours  
+            });  
+            console.log(token);  
+            res.json({  
+                success: true,  
+                message: 'Here is your token!',  
+                token: token  
+            });  
+        } else {  
+            res.json({  
+                success: false,  
+                message: 'Authentication failed. Wrong password!'  
+            });  
+        }  
+        res.send(foundUser);  
+    } else {  
+        res.json({  
+            success: false,  
+            message: 'Authentication failed. Couldnot find user!'  
+        });  
+    }  
+};
+});
+});  
 
 
 // start server

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>My App</title>
+		<script src="https://www.gstatic.com/firebasejs/3.1.0/firebase.js"></script>
+		<script>
+		var config = {
+    apiKey: "AIzaSyBAo2ikrt0ngAgK9GsoZUs2j4JA9_ftWDs",
+    authDomain: "sweaca-nursery.firebaseapp.com",
+    databaseURL: "https://sweaca-nursery.firebaseio.com",
+    projectId: "sweaca-nursery",
+    storageBucket: "sweaca-nursery.appspot.com",
+    messagingSenderId: "1018808263607"
+  };
+
+firebase.initializeApp(config);
+		</script>
+	</head>
+	<body>
+		<h1>My App</h1>
+		<p>Login With Firebase</p>
+		<h3 id="google-email"></h3>
+		<img id="google-pic" src="" />
+		<p id="google-email"></p>
+			<button onclick={signInWithGoogle()}>
+			Sign In With Google
+			</button> 
+			<script>function signInWithGoogle(){
+				var googleAuthProvider= new firebase.auth.GoogleAuthProvider
+
+				firebase.auth().signInWithPopup(googleAuthProvider)
+				.then(function(data){
+					console.log(data);
+				})
+				.catch( function(error){
+					console.log(error);
+				})
+			}
+		</script>
+	</body>
+</html>

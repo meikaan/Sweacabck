@@ -22,51 +22,17 @@ firebase.initializeApp(config);
 		<h3 id="google-displayName"></h3>
 		<img id="google-pic" src="" />
 		<p id="google-email"></p>
-			<button id="gone" onclick={signInWithGoogle()}>
+			<button class = "btn btn-primary"
+			id="google-signin" 
+			onclick={signInWithGoogle()}>
 			Sign In With Google
-			</button> 
-			<script>
-				function checkIfLoggedIn(){
-					if(localStorage.getItem('firebase_idToken')){
-						document.getElementById('gone')
-						.setAttribute('style', 'display: none; visibility: hidden;')
-						document.getElementById('google-pic')
-						.setAttribute('src',localStorage.getItem('google_photo'))
-					}
-					else{
-						document.getElementById('gone')
-						.setAttribute('style', 'display: inline-block; visibility: visible')
-					}
-				}
-				checkIfLoggedIn()
-				function signInWithGoogle(){
-				var googleAuthProvider= new firebase.auth.GoogleAuthProvider
-
-				firebase.auth().signInWithPopup(googleAuthProvider)
-				.then(function(data){
-					console.log(data);
-					// var myName = data.user.displayName
-					var photoURL = data.user.photoURL
-					// document.getElementById('google-pic')
-					// 	.setAttribute('src', photoURL)
-					// document.getElementById('google-displayName')
-					// 	.innerHTML = myName
-
-					var idToken = data.credential.idToken
-					localStorage.setItem('firebase_idToken', idToken)
-					localStorage.setItem('google_photo', photoURL) 
-					
-					document.getElementById('google-pic')
-							.setAttribute('src', photoURL)
-					// document.getElementById('google-displayName')
-					// .innerHTML = myName
-					// document.getElementById('gone')
-					// 		.setAttribute('style', 'display: none; visibility: hidden;')
-				})
-				.catch( function(error){
-					console.log(error);
-				})
-			}
-		</script>
+			</button>
+		 	<button class="btn btn"
+		 	id="signout"
+		 	onclick ={signOut()}
+		 	style = "display:none; visibility:hidden;"> 
+		 	Sign Out
+		 	</button>
+			<script src ="js/firebaseAuth.js"></script>
 	</body>
 </html>
